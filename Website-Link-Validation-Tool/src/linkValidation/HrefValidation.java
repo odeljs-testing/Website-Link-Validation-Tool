@@ -18,12 +18,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 public class HrefValidation {
 	
 	
-	
-	
-	
-	
-	
-	
 	public static void main(String[] args) throws FileNotFoundException {
 		
 		//boolean checker,true = active false = not active
@@ -38,17 +32,18 @@ public class HrefValidation {
 		
 		driver.manage().window().maximize();
 		
-		
-		Date date = Calendar.getInstance().getTime();  
-		
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");  
-		
-		String currentDate = dateFormat.format(date);  
+		//Getting today's date 
+		Date date = new Date();  
+	    SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");  
+	    String currentDate = formatter.format(date);    
 		
 		//CSV file
 		File csvFile = new File(currentDate + "-ActiveLinkReport.csv");
 		
 		PrintWriter out = new PrintWriter(csvFile);
+		
+		//title rows of csv
+		out.printf("Webpage, Href");
 		
 		//Get URLs to pages from file
 		try {
