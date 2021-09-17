@@ -38,10 +38,6 @@ public class HrefValidation {
 		
 		driver.manage().window().maximize();
 		
-		//CSV file
-		File csvFile = new File("Today.csv");
-		
-		PrintWriter out = new PrintWriter(csvFile);
 		
 		Date date = Calendar.getInstance().getTime();  
 		
@@ -49,7 +45,10 @@ public class HrefValidation {
 		
 		String currentDate = dateFormat.format(date);  
 		
+		//CSV file
+		File csvFile = new File(currentDate + "-ActiveLinkReport.csv");
 		
+		PrintWriter out = new PrintWriter(csvFile);
 		
 		//Get URLs to pages from file
 		try {
@@ -111,7 +110,7 @@ public class HrefValidation {
 				//on into csv file
 				
 				if(activeChecker == false) {
-					out.printf("%s, %s, %s", currentDate, URLList.getFirst(), currentHref);
+					out.printf("%s, %s", URLList.getFirst(), currentHref);
 				}
 				
 			} 
