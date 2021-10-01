@@ -3,6 +3,8 @@ package linkValidation;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -18,7 +20,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 public class HrefValidation {
 	
 	
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws IOException {
 		
 		//boolean checker,true = active false = not active
 		boolean activeChecker = true;
@@ -38,12 +40,12 @@ public class HrefValidation {
 	    String currentDate = formatter.format(date);    
 		
 		//CSV file
-		File csvFile = new File(currentDate + "-ActiveLinkReport.csv");
+		FileWriter csvFile = new FileWriter(currentDate + "-ActiveLinkReport.csv");
 		
-		PrintWriter out = new PrintWriter(csvFile);
+		//PrintWriter out = new PrintWriter(csvFile);
 		
 		//title rows of csv
-		out.printf("Webpage, Href");
+		csvFile.append("Webpage,Href");
 		
 		//Get URLs to pages from file
 		try {
@@ -105,7 +107,10 @@ public class HrefValidation {
 				//on into csv file
 				
 				if(activeChecker == false) {
-					out.printf("%s, %s", URLList.getFirst(), currentHref);
+					csvFile.append(URLList.getFirst());
+					csvFile.append(",");
+					csvFile.append(currentHref);
+					csvFile.append("\n");
 				}
 				
 			} 
@@ -120,7 +125,7 @@ public class HrefValidation {
 		
 		}
 	
-	out.close();
+	csvFile.close();
 	
 		
 	
