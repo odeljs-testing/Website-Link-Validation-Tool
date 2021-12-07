@@ -6,130 +6,174 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+
+
+
+
 
 public class HrefValidation {
 	
-	
+	//list that holds urls to be checked
+			static LinkedList<String> URLList = new LinkedList<>();
+			static LinkedList<String> PDFList = new LinkedList<>();
+			
+			
+			
+			
 	public static void main(String[] args) throws IOException {
 		
-		//boolean checker,true = active false = not active
-		boolean activeChecker = true;
-		
-		//list that holds urls to be checked
-		LinkedList<String> URLList = new LinkedList<>();
-		
+	
 		System.setProperty("webdriver.chrome.driver","/Users/odelj/Selenium/chromedriver");
 		
 		WebDriver driver = new ChromeDriver();
 		
+		
 		driver.manage().window().maximize();
 		
-		//Getting today's date 
+		
+		//Get starting URL from command line
+		URLList.add(args[0]);
+		
+		buildList(driver);
+						
+	}
+	
+	
+	//Sort and build list to validate
+	public static void buildList(WebDriver driver) throws IOException{
+		
 		Date date = new Date();  
 	    SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");  
 	    String currentDate = formatter.format(date);    
 		
 		//CSV file
-		FileWriter csvFile = new FileWriter(currentDate + "-ActiveLinkReport.csv");
+		File urlFile = new File(currentDate + "-ActiveLinkReport.csv");
 		
-		//PrintWriter out = new PrintWriter(csvFile);
+		PrintWriter out = new PrintWriter(urlFile);
 		
 		//title rows of csv
-		csvFile.append("Webpage,Href");
+		out.println("Webpage,Href,Validation\n");
 		
-		//Get URLs to pages from file
-		try {
-			
-			File myFile = new File("WholeHealthSitePages.txt");
-			
-			Scanner myReader = new Scanner(myFile);
-			
-			while(myReader.hasNextLine()) {
+		//CSV file
+		File pdfFile = new File(currentDate + "-ActivePDFReport.csv");
 				
-				String currentURL = myReader.nextLine();
+		PrintWriter outTwo = new PrintWriter(pdfFile);
 				
-				URLList.add(currentURL);
-				
-			}
-			
-		}
-		catch(FileNotFoundException e){
-			
-			System.out.println("An error occurred while reading the website list file");
-			
-			e.printStackTrace();
-		}
-	
+				//title rows of csv
+		outTwo.println("Webpage,PDF,Validation\n");
 		
-		//while there is a webpage URL in the list that we want to check
-		while(URLList.size() != 0 && URLList.size() > 0) {
+		boolean activeChecker;
+		 
+		
 			
+		for(int k = 0; k < URLList.size(); k++) {
 			//create driver + webpage
-			driver.get(URLList.getFirst());
+			driver.get(URLList.get(k));
 			
 			//get all href elements on the driver webpage
 			List<WebElement> links = driver.findElements(By.tagName("a"));
-		
-			
 			
 			//iterate through all links on page
 			for(int i = 0; i < links.size(); i++) {
 				
-				//get the first href element
+				
+				try {
+				//get the href element
 				WebElement currentElement = links.get(i);
 				
 				//create string of href element to pass to verifier method
 				String currentHref = currentElement.getAttribute("href");
-			
+				
 				//if null skip iteration
-				if(currentHref == null) {
+				if(currentHref == null || currentHref.contains("#")) {
 					continue;
 				}
 				
 				//if current URL contains http then verify
-				if(currentHref.contains("http")) {
+				if(currentHref.contains("http") && currentHref.contains("WHOLEHEALTHLIBRARY")) {
 					
+				
+				//if current URL is .asp do link check
+				if(currentHref.contains(".asp") && !URLList.contains(currentHref)) {
+					URLList.add(currentHref);
 					//call method to verify currentURL
 					activeChecker = verifyLinkIsActive(currentHref);
+					
+					
+
+					
+					if(activeChecker == false) {
+						
+						out.println(URLList.get(k) + "," + currentHref + ","
+						+ "invalid");
+						
+					}else {
+						
+						out.println(URLList.get(k) + "," + currentHref + "," 
+						+ "valid");
+						
+					}
+					
+					out.flush();
+					
 				}
 				
-				//if activeLinkChecker is false it is a bad link so input it and the webpage its
-				//on into csv file
 				
-				if(activeChecker == false) {
-					csvFile.append(URLList.getFirst());
-					csvFile.append(",");
-					csvFile.append(currentHref);
-					csvFile.append("\n");
+				
+				//if current URL is pdf do link check
+				if(currentHref.contains(".pdf") && !PDFList.contains(currentHref)) {
+					PDFList.add(currentHref);
+					
+					activeChecker = verifyLinkIsActive(currentHref);
+					
+					
+					
+					if(activeChecker == false) {
+						
+						outTwo.println(URLList.get(k) + "," + currentHref + ","
+						+ "invalid");
+						
+					}else {
+					
+						outTwo.println(URLList.get(k) + "," + currentHref + "," 
+						+ "valid");
+						
+					}
+						}
+					
+					outTwo.flush();
+					}
+					
+					
+				}catch(StaleElementReferenceException e) {
+					System.out.println("Caught error");
 				}
 				
-			} 
-		
-			//remove the already checked URL webpage from the list
-			URLList.removeFirst();
-			
-			//remove all items from href list
-			links.clear();
-			
-		
+				
+			}
+		links.clear();
 		
 		}
-	
-	csvFile.close();
-	
 		
-	
-	}
+		outTwo.close();
+		out.close();
+	}		
+		
 	
 	
 	public static boolean verifyLinkIsActive(String currentHref)  {
@@ -149,16 +193,30 @@ public class HrefValidation {
 	           if(httpURLConnect.getResponseCode()==200)
 	           {
 	               activeChecker = true;
-	        	   System.out.println(currentHref+" - "+httpURLConnect.getResponseMessage());
+	        	   
 	            }
 	          if(httpURLConnect.getResponseCode()==HttpURLConnection.HTTP_NOT_FOUND)  
 	           {
 	              activeChecker = false; 
-	        	  System.out.println(currentHref+" - "+httpURLConnect.getResponseMessage() + " - "+ HttpURLConnection.HTTP_NOT_FOUND);
+	        	 
 	            }
 	        } catch (Exception e) {
 	           
 	        }
 		  return activeChecker;
 	}
+	
+	public static void verifyPDFLinks() {
+		
+		
+		
+		//iterate through all PDF in list
+		for(int j= 0; j < PDFList.size(); j++) {
+		
+		//Load the pdf file
+		
+				
+		}
+	}
 }
+

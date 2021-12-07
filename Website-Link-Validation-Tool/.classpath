@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-16">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -14,5 +15,8 @@
 	<classpathentry kind="lib" path="/Users/odelj/Selenium/selenium-java-3.141.59/libs/okhttp-3.11.0.jar"/>
 	<classpathentry kind="lib" path="/Users/odelj/Selenium/selenium-java-3.141.59/libs/okio-1.14.0.jar"/>
 	<classpathentry kind="lib" path="/Users/odelj/Downloads/smartsheet-sdk-java-2.126.1.jar"/>
+	<classpathentry kind="lib" path="resources/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="resources/fontbox-2.0.24.jar"/>
+	<classpathentry kind="lib" path="resources/pdfbox-2.0.24.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
