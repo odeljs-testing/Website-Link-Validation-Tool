@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="resources/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="resources/fontbox-2.0.24.jar"/>
 	<classpathentry kind="lib" path="resources/pdfbox-2.0.24.jar"/>
+	<classpathentry kind="lib" path="resources/aspose.pdf-21.11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

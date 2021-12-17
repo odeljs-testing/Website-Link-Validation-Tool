@@ -1,10 +1,12 @@
 package linkValidation;
 
 
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
@@ -13,13 +15,26 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripperByArea;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+
+
 
 
 
@@ -50,6 +65,8 @@ public class HrefValidation {
 		URLList.add(args[0]);
 		
 		buildList(driver);
+		
+		pdfValidation();
 						
 	}
 	
@@ -137,7 +154,7 @@ public class HrefValidation {
 				
 				//if current URL is pdf do link check
 				if(currentHref.contains(".pdf") && !PDFList.contains(currentHref)) {
-					PDFList.add(currentHref);
+					
 					
 					activeChecker = verifyLinkIsActive(currentHref);
 					
@@ -149,7 +166,7 @@ public class HrefValidation {
 						+ "invalid");
 						
 					}else {
-					
+						PDFList.add(currentHref);
 						outTwo.println(URLList.get(k) + "," + currentHref + "," 
 						+ "valid");
 						
@@ -172,6 +189,7 @@ public class HrefValidation {
 		
 		outTwo.close();
 		out.close();
+		
 	}		
 		
 	
@@ -206,17 +224,89 @@ public class HrefValidation {
 		  return activeChecker;
 	}
 	
-	public static void verifyPDFLinks() {
+	public static void pdfValidation() throws IOException {
+		
+		PDFTextStripper tStripper = new PDFTextStripper();
+		tStripper.setStartPage(1);
+		tStripper.setEndPage(3);
+		String content = null;
+		String urls = null;
+		
+		boolean activeChecker = false;
+		
+		Date date = new Date();  
+	    SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");  
+	    String currentDate = formatter.format(date);    
+		
+		//CSV file
+		File urlFile = new File(currentDate + "-ExternalPDFLinkReport.csv");
+		
+		PrintWriter out = new PrintWriter(urlFile);
+		
+		//title rows of csv
+		out.println("PDF,Href,Validation\n");
+		
+		for(int i = 0; i < PDFList.size(); i++) {
+		
+		//need to load doc from URL
+		
+			InputStream is = new URL(PDFList.get(i)).openStream();
+			PDDocument document = PDDocument.load(is);
+		
+		document.getClass();
 		
 		
 		
-		//iterate through all PDF in list
-		for(int j= 0; j < PDFList.size(); j++) {
-		
-		//Load the pdf file
-		
-				
+		if(!document.isEncrypted()) {
+			String pdfFileInText = tStripper.getText(document);
+			String[] lines = pdfFileInText.split("\\r\\n\\r\\n");
+			
+			for (String line : lines) {
+               // System.out.println(line);
+                content += line;
+			}
 		}
+		
+		
+		for(int k = 0; k < document.getNumberOfPages(); k++) {
+		
+		PDPage pdfpage = document.getPage(k);
+        List<PDAnnotation> annotations = pdfpage.getAnnotations();
+        for (int j = 0; j < annotations.size(); j++) {
+            PDAnnotation annot = annotations.get(j);
+            
+            if (annot instanceof PDAnnotationLink) {
+                PDAnnotationLink link = (PDAnnotationLink) annot;
+                PDAction action = link.getAction();
+                
+                if (action instanceof PDActionURI) {
+                  
+                	PDActionURI uri = (PDActionURI) action;
+                    urls += uri.getURI();
+                    
+                    activeChecker = verifyLinkIsActive(uri.getURI());
+                    
+                    if(activeChecker == false) {
+                    	out.println(PDFList.get(i) + "," + uri.getURI() + "," 
+                				+ "invalid");
+                				
+                    }
+                    
+                }
+            }
+        
+            
+        }
+        out.flush();
+        annotations.clear();
+		}
+		}
+	
+	out.close();
+		
 	}
 }
+	
+	
+
 
