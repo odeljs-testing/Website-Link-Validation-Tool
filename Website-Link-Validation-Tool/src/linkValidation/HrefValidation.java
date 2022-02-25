@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
@@ -66,7 +67,7 @@ public class HrefValidation {
 		
 		buildList(driver);
 		
-		pdfValidation();
+		
 						
 	}
 	
@@ -84,17 +85,27 @@ public class HrefValidation {
 		PrintWriter out = new PrintWriter(urlFile);
 		
 		//title rows of csv
-		out.println("Webpage,Href,Validation\n");
+		out.println("Webpage,Href\n");
 		
 		//CSV file
 		File pdfFile = new File(currentDate + "-ActivePDFReport.csv");
 				
 		PrintWriter outTwo = new PrintWriter(pdfFile);
 				
-				//title rows of csv
+		//title rows of csv
 		outTwo.println("Webpage,PDF,Validation\n");
 		
 		boolean activeChecker;
+		
+		  
+		
+		//CSV file
+		File pdfURLFile = new File(currentDate + "-ExternalPDFLinkReport.csv");
+		
+		PrintWriter outer = new PrintWriter(pdfURLFile);
+		
+		//title rows of csv
+		outer.println("PDF,Href,Validation\n");
 		 
 		
 			
@@ -122,10 +133,23 @@ public class HrefValidation {
 				}
 				
 				//if current URL contains http then verify
+				
 				if(currentHref.contains("http") && currentHref.contains("WHOLEHEALTHLIBRARY")) {
 					
 				
-				//if current URL is .asp do link check
+					/*if(currentHref.contains("Passport-to-Whole-Health-3rd-Edition-2018.pdf")) {
+						out.println(URLList.get(k) + "," + currentHref);
+						
+					}
+					
+					if(!URLList.contains(currentHref)) {
+						URLList.add(currentHref);
+					}
+					
+					out.flush();
+				*/
+				
+					//if current URL is .asp do link check
 				if(currentHref.contains(".asp") && !URLList.contains(currentHref)) {
 					URLList.add(currentHref);
 					//call method to verify currentURL
@@ -138,11 +162,6 @@ public class HrefValidation {
 						
 						out.println(URLList.get(k) + "," + currentHref + ","
 						+ "invalid");
-						
-					}else {
-						
-						out.println(URLList.get(k) + "," + currentHref + "," 
-						+ "valid");
 						
 					}
 					
@@ -157,7 +176,7 @@ public class HrefValidation {
 					
 					
 					activeChecker = verifyLinkIsActive(currentHref);
-					
+					PDFList.add(currentHref);
 					
 					
 					if(activeChecker == false) {
@@ -165,16 +184,14 @@ public class HrefValidation {
 						outTwo.println(URLList.get(k) + "," + currentHref + ","
 						+ "invalid");
 						
-					}else {
-						PDFList.add(currentHref);
-						outTwo.println(URLList.get(k) + "," + currentHref + "," 
-						+ "valid");
+						
 						
 					}
 						}
 					
 					outTwo.flush();
 					}
+					
 					
 					
 				}catch(StaleElementReferenceException e) {
@@ -189,6 +206,26 @@ public class HrefValidation {
 		
 		outTwo.close();
 		out.close();
+		
+		for(int h = 0; h < PDFList.size(); h++) {
+			
+			try{
+			pdfValidation(h, outer);
+
+			}catch(IOException e) {
+				System.out.println("Caught error");
+			}
+			outer.flush();
+		}
+		
+		
+		outer.close();
+		
+		//for(int q = 0; q < PDFList.size(); q++) {
+		
+			//getPDFTitle(1);
+		
+		//}
 		
 	}		
 		
@@ -208,6 +245,8 @@ public class HrefValidation {
 	           
 	           httpURLConnect.connect();
 	           
+	           //System.out.println(currentHref + "Response Code: " + httpURLConnect.getResponseCode());
+	           
 	           if(httpURLConnect.getResponseCode()==200)
 	           {
 	               activeChecker = true;
@@ -218,13 +257,15 @@ public class HrefValidation {
 	              activeChecker = false; 
 	        	 
 	            }
+	          
+	          
 	        } catch (Exception e) {
 	           
 	        }
 		  return activeChecker;
 	}
 	
-	public static void pdfValidation() throws IOException {
+	public static void pdfValidation(int q, PrintWriter out) throws IOException {
 		
 		PDFTextStripper tStripper = new PDFTextStripper();
 		tStripper.setStartPage(1);
@@ -233,26 +274,18 @@ public class HrefValidation {
 		String urls = null;
 		
 		boolean activeChecker = false;
+		int listPointer = q;
 		
-		Date date = new Date();  
-	    SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");  
-	    String currentDate = formatter.format(date);    
 		
-		//CSV file
-		File urlFile = new File(currentDate + "-ExternalPDFLinkReport.csv");
+		//System.out.println(PDFList.get(listPointer));
 		
-		PrintWriter out = new PrintWriter(urlFile);
-		
-		//title rows of csv
-		out.println("PDF,Href,Validation\n");
-		
-		for(int i = 0; i < PDFList.size(); i++) {
+		if(PDFList.get(listPointer) != "https://www.va.gov/WHOLEHEALTHLIBRARY/docs/The-DASH-Diet.pdf") {
 		
 		//need to load doc from URL
 		
-			InputStream is = new URL(PDFList.get(i)).openStream();
-			PDDocument document = PDDocument.load(is);
-		
+			InputStream is = new URL(PDFList.get(listPointer)).openStream();
+		PDDocument	document = PDDocument.load(is);
+			
 		document.getClass();
 		
 		
@@ -287,9 +320,14 @@ public class HrefValidation {
                     activeChecker = verifyLinkIsActive(uri.getURI());
                     
                     if(activeChecker == false) {
-                    	out.println(PDFList.get(i) + "," + uri.getURI() + "," 
+                    	out.println(PDFList.get(listPointer) + "," + uri.getURI() + "," 
                 				+ "invalid");
                 				
+                    }else {
+                    	out.println(PDFList.get(listPointer) + "," + uri.getURI() + "," 
+                				+ "valid");
+                		
+                    	
                     }
                     
                 }
@@ -297,14 +335,37 @@ public class HrefValidation {
         
             
         }
-        out.flush();
+        
         annotations.clear();
+        
 		}
+		document.close();
+		
 		}
 	
-	out.close();
 		
 	}
+	
+	public static void getPDFTitle(int q) throws MalformedURLException, IOException {
+		
+		
+		//get URL of pdf document 
+		InputStream is = new URL(PDFList.get(q)).openStream();
+		
+		//creating PDF document object
+		PDDocument doc = new PDDocument();
+		
+		
+		//get PDD document information
+		PDDocumentInformation pdd = doc.getDocumentInformation();
+		
+		
+		//get the title of the document and print
+		System.out.println(PDFList.get(q) + " - " + pdd.getTitle());
+		
+		doc.close();
+	}
+	
 }
 	
 	
