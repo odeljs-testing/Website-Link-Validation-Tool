@@ -45,8 +45,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 public class HrefValidation {
 	
 	//list that holds urls to be checked
-			static LinkedList<String> URLList = new LinkedList<>();
-			static LinkedList<String> PDFList = new LinkedList<>();
+			static LinkList<String> URLList = new LinkList<>();
+			static LinkList<String> PDFList = new LinkList<>();
 			
 			
 			
