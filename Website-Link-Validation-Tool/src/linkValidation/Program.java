@@ -10,8 +10,8 @@ import java.util.Scanner;
 
 public class Program implements ActionListener {
 
-	TextField t;
-	static String searchUrl;
+	TextField urlTextField, domainTextField;
+	String searchurl, domain;
 	Button searchB;
 	
 	
@@ -20,19 +20,38 @@ public class Program implements ActionListener {
 			//creating a frame
 			Frame f = new Frame();
 			
-			//creating a label
+			//creating searchurl label
 			Label searchURL = new Label("Search URL:");
 			
-			//creating a button
+			//creating domain input label
+			Label domainLabel = new Label("Domain:");
+			
+			
+			//creating button for search
 			searchB = new Button("Search");
 			
-			//creating a text field
-			t = new TextField();
 			
-		    // setting position of above components in the frame  
-		      searchURL.setBounds(20, 80, 80, 30);  
-		      t.setBounds(20, 100, 80, 30);  
-		      searchB.setBounds(100, 100, 80, 30);  
+			
+			
+			//creating text field for search
+			urlTextField = new TextField();
+			
+			
+			//create a text field for domain input
+			domainTextField = new TextField();
+			
+			
+			
+		    // setting position of domain content
+		      domainLabel.setBounds(20, 70, 80, 30);  
+		      domainTextField.setBounds(20, 100, 400, 30);  
+		       
+		      
+		    //setting position of searchurl content
+		      searchURL.setBounds(20, 130, 80, 30);  
+		      urlTextField.setBounds(20, 160, 400, 30);  
+		      searchB.setBounds(180, 200, 80, 30);
+		      
 		  
 		      //adding action listener
 		      searchB.addActionListener(this);
@@ -40,10 +59,12 @@ public class Program implements ActionListener {
 		      // adding components into frame    
 		      f.add(searchURL);  
 		      f.add(searchB);  
-		      f.add(t);  
+		      f.add(urlTextField);
+		      f.add(domainLabel);
+		      f.add(domainTextField);
 		  
 		      // frame size 300 width and 300 height    
-		      f.setSize(400,300);  
+		      f.setSize(600,450);  
 		  
 		      // setting the title of frame  
 		      f.setTitle("Techwerks Webpage Validation Tool");   
@@ -63,8 +84,16 @@ public class Program implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
 			
-			searchUrl = t.getText();
+			searchurl = urlTextField.getText();
 			
+			domain = domainTextField.getText();
+			
+			System.out.println(searchurl);
+			
+			//search for the url
+			ListBuilder list = new ListBuilder(domain);
+			list.buildWebpageList();
+			list.SearchForUrl(searchurl);
 		}
 		
 
@@ -74,42 +103,12 @@ public class Program implements ActionListener {
 
 		public static void main(String[] args) {
 	
-			int userSelection = 0;
-			String domain = args[0];
-			String url = "";
-	
 			Program program = new Program();
 			
-			System.out.println(searchUrl);
+			
 	
 		}
 }
 
-
-
-		/*Scanner sc = new Scanner(System.in);
-		
-		System.out.println("What would you like to do with the provided link?");
-		System.out.println("1 - Search for all instances of a link in the given domain?");
-		
-		
-		//Create switch statement navigation menu
-		switch(userSelection = sc.nextInt()) {
-		case 1: 
-			//get list needed
-			//call method with list
-			
-			System.out.println("Provide the link you would like to search for:");
-			url = sc.next();
-			System.out.println(url);
-			ListBuilder list = new ListBuilder(domain);
-			list.buildWebpageList();
-			list.SearchForUrl(url);
-			break;
-			
-		}
-		
-
-	}*/
 
 
